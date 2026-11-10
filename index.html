@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Treasure Odds Calculator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Fan-made calculator for Fortnite Treasure Hunters chest drop odds, Treasure Hour boosts, prize value and chest routes. Made by Money Man Musa (FN User: progamer987612).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: battle-pass style. Sticky gold HUD bar, hero scoreboard, two-column "locker" (controls left, loot right), prize vault, zoomable island map, sources. Phones get a fixed bottom odds bar. */
+:root{
+  --bg:#0c0920;
+  --bg-2:#130e30;
+  --panel:#1a1440;
+  --panel-2:#241c55;
+  --ink:#fbf4df;
+  --muted:#b3a8d6;
+  --gold:#f7c948;
+  --gold-hi:#ffe9a3;
+  --gold-deep:#c9871b;
+  --line:rgba(247,201,72,.2);
+  --r-mythic:#f7c948;
+  --r-legendary:#f28c28;
+  --r-epic:#b866f2;
+  --r-rare:#3fa9f5;
+  --r-uncommon:#62d26f;
+  --r-common:#9ea6bb;
+  --live:#ff4d6d;
+  --display:"Luckiest Guy","Impact","Arial Black",system-ui,sans-serif;
+  --ui:"Barlow Semi Condensed","Arial Narrow",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{background:radial-gradient(1200px 600px at 70% -10%,#3a2470 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#2a1a5c 0%,transparent 60%),var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.45;font-weight:500;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg-2)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.02em;text-wrap:balance;margin:0;line-height:1.05}
+h2{font-size:clamp(28px,4vw,40px);color:var(--gold);text-shadow:0 3px 0 #6b3d05}
+h3{font-size:20px}
+p{margin:0}
+a{color:var(--gold-hi)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold-hi);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* HUD bar */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:linear-gradient(180deg,#1b1442,#130e30);border-bottom:2px solid var(--gold-deep);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.hud .wrap{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand svg{width:48px;height:48px;flex:none;filter:drop-shadow(0 2px 6px rgba(247,201,72,.35))}
+.brand b{font-family:var(--display);font-size:24px;font-weight:400;color:var(--gold);text-shadow:0 2px 0 #6b3d05;letter-spacing:.03em;display:block;line-height:1.1}
+.brand small{display:block;font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.brand small em{font-style:normal;color:var(--gold-hi)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:6px 12px;transform:skewX(-8deg)}
+.chip > *{transform:skewX(8deg)}
+.chip .k{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.chip .v{font-weight:800;color:var(--gold-hi);white-space:nowrap}
+.chip.live{border-color:var(--live);background:#3a0f22}
+.chip.live .v{color:#ffd0d9}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.chip.live .dot{background:var(--live);animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,109,.7)}100%{box-shadow:0 0 0 10px rgba(255,77,109,0)}}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.6}
+.hero .wrap{position:relative;padding-block:36px 32px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(40px,7vw,76px);color:var(--gold);text-shadow:0 4px 0 #6b3d05,0 10px 30px rgba(247,201,72,.25)}
+.hero h1 span{display:block;color:var(--ink);font-size:.55em;text-shadow:0 3px 0 #2a1a5c}
+.hero p.lede{margin-top:14px;max-width:56ch;color:var(--muted);font-size:18px}
+.hero p.lede b{color:var(--ink)}
+.byline{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(247,201,72,.12);border:1px solid var(--gold-deep);padding:6px 12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:var(--gold-hi)}
+.score{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{background:linear-gradient(160deg,var(--panel-2),var(--panel));border:1px solid var(--line);padding:14px 16px;clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%);min-width:0}
+.tile .k{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.tile .v{font-family:var(--display);font-size:clamp(26px,3.6vw,38px);color:var(--gold);line-height:1.1;margin-top:4px;overflow-wrap:anywhere}
+.tile .s{font-size:14px;color:var(--muted);margin-top:2px}
+.tile.big{grid-column:1/-1;background:linear-gradient(135deg,#5a3a07,#2b1c55 70%);border-color:var(--gold-deep)}
+.tile.big .v{font-size:clamp(34px,5vw,52px);color:var(--gold-hi)}
+.tile.alt{background:linear-gradient(135deg,#2b1c55,#1a1440)}
+.tile.alt .v{color:var(--ink)}
+sup{font-size:.55em}
+
+/* Sections */
+section{padding-block:40px}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.sec-head p{color:var(--muted);max-width:62ch}
+.locker{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:24px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);padding:18px;min-width:0}
+.controls{display:grid;gap:18px}
+.controls h3{color:var(--gold)}
+.ctl{display:grid;gap:8px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.ctl output{color:var(--gold-hi);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hint{font-size:14px;color:var(--muted)}
+.hint b{color:var(--ink)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:12px;margin:8px 0;background:linear-gradient(90deg,var(--gold) 0 var(--fill,50%),#2f2766 var(--fill,50%) 100%);border-radius:0;cursor:pointer;touch-action:pan-y}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:var(--gold-hi);border:3px solid #6b3d05;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;background:var(--gold-hi);border:3px solid #6b3d05;border-radius:0;transform:rotate(45deg)}
+input[type=range]:disabled{opacity:.4}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg button{background:#2a2160;border:1px solid var(--line);padding:10px 4px;font-weight:700;font-size:14px;cursor:pointer;line-height:1.15;min-height:44px}
+.seg button[aria-pressed=true]{background:var(--gold);color:#2a1700;border-color:var(--gold-hi)}
+select,input[type=date],input[type=number]{background:#241c55;border:1px solid var(--line);padding:10px;width:100%;min-height:44px;font-size:16px}
+.toggle{display:flex;gap:10px;align-items:flex-start;font-weight:700;cursor:pointer}
+.toggle input{width:22px;height:22px;accent-color:var(--gold);flex:none;margin-top:1px}
+.explain{background:#120d2c;border:1px solid var(--line);border-left:4px solid var(--gold);padding:12px 14px;font-size:14px;color:var(--muted);display:grid;gap:6px}
+.explain b{color:var(--ink)}
+.counter{display:grid;grid-template-columns:1fr auto auto auto;gap:6px}
+.btn{background:var(--gold);color:#2a1700;border:0;padding:10px 14px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;transform:skewX(-8deg);box-shadow:0 3px 0 #6b3d05;min-height:44px}
+.btn:hover{background:var(--gold-hi)}
+.btn:active{transform:skewX(-8deg) translateY(2px);box-shadow:0 1px 0 #6b3d05}
+.btn.ghost{background:#2a2160;color:var(--ink);box-shadow:0 3px 0 #0b0820}
+.divider{height:1px;background:var(--line)}
+
+/* Loot cards */
+.loot{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{--rc:var(--r-common);position:relative;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 22%,var(--panel)) 0%,var(--panel) 55%);border:1px solid color-mix(in srgb,var(--rc) 45%,transparent);padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--rc)}
+.card .top{display:flex;gap:12px;align-items:center}
+.icon{width:54px;height:54px;flex:none;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,var(--rc),color-mix(in srgb,var(--rc) 30%,#000) 80%);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.icon svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.card h3{font-size:19px;line-height:1.1}
+.card .rar{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--rc)}
+.card .sub{font-size:14px;color:var(--muted)}
+.odds{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:13px;font-weight:700;padding:3px 8px;background:#0f0b26;border:1px solid var(--line)}
+.pill.boost{border-color:var(--gold);color:var(--gold-hi)}
+.pill.ok{border-color:#3c8a4a;color:#a9efb2}
+.chance{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.chance .big{font-family:var(--display);font-size:30px;color:var(--ink)}
+.chance .lbl{font-size:13px;color:var(--muted);text-align:right}
+.bar{height:8px;background:#0f0b26;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rc),var(--gold-hi));min-width:2px}
+.facts{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px;margin:0}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.history{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
+.history .tile .v{font-size:28px}
+
+/* Charts + prizes */
+.charts{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px}
+.chart-box{overflow-x:auto}
+.chart-box svg{display:block;width:100%;height:auto;min-width:320px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:14px;color:var(--muted);margin-top:8px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:14px;height:4px;display:block}
+.prize-rows{display:grid;gap:10px}
+.prow{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px}
+.prow .name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .track{height:16px;background:#0f0b26;position:relative}
+.prow .track i{position:absolute;inset:0 auto 0 0;background:var(--rc);min-width:2px}
+.prow .val{font-weight:800;color:var(--gold-hi);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+.jackpot{margin-top:16px;padding:14px;background:linear-gradient(135deg,#5a3a07,#2b1c55);border:1px solid var(--gold-deep);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.jackpot b{font-family:var(--display);font-size:30px;font-weight:400;color:var(--gold-hi)}
+.shopcalc{margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.eq{display:grid;gap:8px;font-size:15px}
+.eq .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.eq .row b{color:var(--gold-hi);font-variant-numeric:tabular-nums;text-align:right}
+.eq .total{border:0;font-size:18px}
+.eq .total b{font-family:var(--display);font-size:32px;font-weight:400}
+.valtable{width:100%;border-collapse:collapse;font-size:14px}
+.valtable th,.valtable td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.valtable th{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+.valtable td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.tablebox{overflow-x:auto}
+
+/* Map */
+.map-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
+.map-box{position:relative;background:#0e2c55;border:3px solid var(--gold-deep);aspect-ratio:1/1;max-width:100%;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.map-box svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.map-box svg.drag{cursor:grabbing}
+.zoom{position:absolute;right:10px;top:10px;display:grid;gap:6px;z-index:2}
+.zoom button{width:44px;height:44px;background:rgba(19,14,48,.92);border:2px solid var(--gold-deep);color:var(--gold-hi);font-family:var(--display);font-size:22px;cursor:pointer;line-height:1}
+.zoom button:hover{background:#2a2160}
+.zoomlvl{position:absolute;left:10px;bottom:10px;background:rgba(19,14,48,.85);border:1px solid var(--line);padding:3px 8px;font-size:13px;font-weight:700;color:var(--gold-hi);z-index:2;pointer-events:none}
+.poi{cursor:pointer}
+.poi:focus{outline:none}
+.poi:focus-visible .ring,.poi.sel .ring{stroke:#fff;stroke-width:5}
+.poi text{font-family:var(--display);font-size:24px;fill:#fff;paint-order:stroke;stroke:#140c00;stroke-width:6px;letter-spacing:.03em}
+.layers{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.layers label{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);padding:8px 10px;font-weight:700;font-size:14px;cursor:pointer;min-height:40px}
+.sw{width:12px;height:12px;display:inline-block}
+.routes{display:grid;gap:10px}
+.route{background:var(--panel);border:1px solid var(--line);padding:14px;display:grid;gap:8px;cursor:pointer;text-align:left;width:100%}
+.route[aria-pressed=true]{border-color:var(--gold);background:linear-gradient(135deg,#3d2a08,var(--panel) 60%)}
+.route .rt{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.route .rn{font-family:var(--display);font-size:19px;color:var(--gold)}
+.route .stops{font-size:14px;color:var(--ink);font-weight:700}
+.route .meta{display:flex;flex-wrap:wrap;gap:6px}
+.poi-info{margin-top:14px}
+.poi-info dl{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:8px 0 0;font-size:15px}
+.poi-info dd{margin:0;font-weight:800;color:var(--gold-hi);text-align:right}
+.tips{display:grid;gap:8px;margin:0;padding-left:20px;color:var(--muted)}
+.tips b{color:var(--ink)}
+.note{font-size:13px;color:var(--muted)}
+
+/* Mobile bottom odds bar */
+.mbar{display:none}
+footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--muted);font-size:14px}
+footer ul{margin:8px 0 0;padding-left:18px;display:grid;gap:4px}
+footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-bottom:10px;display:block}
+
+@media (max-width:980px){
+  .hero .wrap,.locker,.charts,.map-grid,.shopcalc{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:700px){
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:linear-gradient(180deg,#1b1442,#0f0b26);border-top:2px solid var(--gold-deep);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));gap:12px;justify-content:space-between;align-items:center;box-shadow:0 -6px 20px rgba(0,0,0,.45)}
+  .mbar div{display:grid;line-height:1.1}
+  .mbar .k{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+  .mbar .v{font-family:var(--display);font-size:22px;color:var(--gold-hi)}
+  .hero .wrap{padding-block:24px}
+  .hero p.lede{font-size:16px}
+  section{padding-block:28px}
+  .brand svg{width:40px;height:40px}
+  .brand b{font-size:21px}
+  .chip{padding:5px 10px}
+}
+@media (max-width:520px){
+  .score{grid-template-columns:minmax(0,1fr)}
+  .chip .k{display:none}
+  .chips{width:100%}
+  .chip{flex:1;justify-content:center}
+  .prow{grid-template-columns:minmax(0,1fr) auto}
+  .prow .track{grid-column:1/-1;grid-row:2}
+  .counter{grid-template-columns:1fr 1fr 1fr}
+  .counter input{grid-column:1/-1}
+  .loot{grid-template-columns:minmax(0,1fr)}
+  .seg button{font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<header class="hud">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <ellipse cx="32" cy="57" rx="27" ry="5" fill="#6b3d05"/>
+        <circle cx="10" cy="54" r="4.5" fill="#f7c948" stroke="#6b3d05" stroke-width="1.5"/>
+        <circle cx="54" cy="54" r="4.5" fill="#f7c948" stroke="#6b3d05" stroke-width="1.5"/>
+        <circle cx="49" cy="57" r="3.5" fill="#ffe9a3" stroke="#6b3d05" stroke-width="1.5"/>
+        <rect x="8" y="30" width="48" height="24" fill="#8a4f12" stroke="#2e1a03" stroke-width="2.5"/>
+        <path d="M8 38h48M8 46h48" stroke="#6e3c0c" stroke-width="1.5"/>
+        <path d="M8 30 Q8 13 32 13 Q56 13 56 30Z" fill="#a8621b" stroke="#2e1a03" stroke-width="2.5"/>
+        <path d="M14 29.5 Q15 17 22 15M50 29.5 Q49 17 42 15" stroke="#f7c948" stroke-width="5" fill="none"/>
+        <rect x="13" y="30" width="5" height="24" fill="#f7c948" stroke="#2e1a03" stroke-width="1.5"/>
+        <rect x="46" y="30" width="5" height="24" fill="#f7c948" stroke="#2e1a03" stroke-width="1.5"/>
+        <rect x="6" y="28" width="52" height="5" fill="#f7c948" stroke="#2e1a03" stroke-width="2"/>
+        <path d="M24 28 h16 v12 l-8 6 -8 -6z" fill="#ffe9a3" stroke="#2e1a03" stroke-width="2"/>
+        <circle cx="32" cy="33.5" r="4" fill="#2e1a03"/>
+        <rect x="29.6" y="36" width="4.8" height="3" fill="#2e1a03"/>
+        <circle cx="30.5" cy="33.2" r="1.1" fill="#ffe9a3"/><circle cx="33.5" cy="33.2" r="1.1" fill="#ffe9a3"/>
+        <path d="M27 39.5l10 3.5M37 39.5l-10 3.5" stroke="#2e1a03" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M17 12l1.5-4 1.5 4M45 10l1.5-4 1.5 4M31 7l1-3 1 3" stroke="#ffe9a3" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div><b>Treasure Odds</b><small>Made by <em>Money Man Musa</em> (FN User: progamer987612)</small></div>
+    </div>
+    <div class="chips">
+      <div class="chip" id="chipTH"><span class="dot"></span><span class="k">Next Treasure Hour</span><span class="v num" id="thCountdown">…</span></div>
+      <div class="chip"><span class="k">Season ends</span><span class="v num" id="seasonCountdown">…</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <canvas id="coins" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Fortnite Chapter 7 · Treasure Hunters mini season</p>
+      <h1>Will you hit the treasure?<span>Your odds, chest by chest</span></h1>
+      <p class="lede">Every treasure rolls on every chest you open. Set how you play and this page works out your chance at <b>Pirate Shop Access</b>, the <b>weekly Gold Outfit</b> and every other drop before the season ends, using Epic's official odds and Treasure Hour boosts.</p>
+      <p class="byline">Made by Money Man Musa (FN User: progamer987612)</p>
+    </div>
+    <div class="score">
+      <div class="tile big"><div class="k">Pirate Shop Access by season end</div><div class="v num" id="hTok">…</div><div class="s" id="hTokS"></div></div>
+      <div class="tile"><div class="k">Expected prize value</div><div class="v num" id="hEV">…</div><div class="s">in US dollars, from your odds</div></div>
+      <div class="tile"><div class="k">Chests left to open</div><div class="v num" id="hChests">…</div><div class="s" id="hChestsS"></div></div>
+      <div class="tile big alt"><div class="k">Odds of getting everything</div><div class="v num" id="hAll">…</div><div class="s">Pirate Shop Access plus every weekly treasure in every remaining week</div></div>
+    </div>
+  </div>
+</div>
+
+<main>
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Your locker</p><h2>Drop odds, tuned to you</h2></div>
+      <p>Drag the sliders. Every card shows your chance of getting that treasure at least once between today and the end of the season.</p>
+    </div>
+    <div class="locker">
+      <aside class="panel controls" aria-label="Play settings">
+        <h3>How you play</h3>
+        <div class="ctl">
+          <label for="hours">Hours played per day <output id="hoursO" class="num"></output></label>
+          <input type="range" id="hours" min="0" max="16" step="0.5" value="3">
+        </div>
+        <div class="ctl">
+          <label for="gph">Games per hour <output id="gphO" class="num"></output></label>
+          <input type="range" id="gph" min="1" max="6" step="0.5" value="2.5">
+        </div>
+        <div class="ctl">
+          <label for="cpg">Chests per game <output id="cpgO" class="num"></output></label>
+          <input type="range" id="cpg" min="1" max="100" step="1" value="10">
+        </div>
+        <div class="ctl">
+          <label class="toggle" for="vaultOn"><input type="checkbox" id="vaultOn"><span>I open a vault every game</span></label>
+          <div id="vaultBox" class="ctl" hidden>
+            <label for="vaults">Vaults per game, on average <output id="vaultsO" class="num"></output></label>
+            <input type="range" id="vaults" min="0.25" max="3" step="0.25" value="1">
+            <span class="hint">Each vault holds <b>3 Rare Chests</b> (plus a Sprite Chest that doesn't count here), so each vault adds 3 chests to every game.</span>
+          </div>
+          <span class="hint">You open <b id="cpgTot" class="num"></b> chests per game, or <b id="cphO" class="num"></b> per hour. Pick a route on the map to fill this in.</span>
+        </div>
+        <div class="divider"></div>
+        <h3>Treasure Hour</h3>
+        <div class="explain">
+          <span><b>What is Treasure Hour?</b> A window when Epic raises the odds on the three rarest treasures. So far these run on Saturdays, reported as 2–4 PM ET and 9–11 PM ET.</span>
+          <span><b>What does boost size mean?</b> It multiplies the normal odds. A 2× boost turns Pirate Shop Access from 1 in 137,500 into 1 in 68,750 per chest. A 10× boost turns the Gold Outfit from 1 in 1,562,500 into 1 in 156,250. Other treasures never change.</span>
+        </div>
+        <div class="ctl">
+          <div class="seg" role="group" aria-label="Treasure Hour schedule">
+            <button type="button" data-th="sat">Saturdays only</button>
+            <button type="button" data-th="daily">Every day (what if)</button>
+            <button type="button" data-th="off">Skip it</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <label for="thHours">Hours you play in Treasure Hour <output id="thHoursO" class="num"></output></label>
+          <input type="range" id="thHours" min="0" max="4" step="0.5" value="2">
+          <span class="hint" id="thHint">Per Treasure Hour day. A Saturday has up to 4 boosted hours across both windows.</span>
+        </div>
+        <div class="ctl">
+          <label for="preset">Boost size</label>
+          <select id="preset">
+            <option value="standard">Standard: token 1.5×, Gold 7.5×, vehicle 10×</option>
+            <option value="late">Biggest so far: token 2×, Gold 10×, vehicle 10×</option>
+            <option value="custom">Custom boost</option>
+          </select>
+          <span class="hint">Standard is Epic's posted boost. "Biggest so far" ran on Nov 7, 9–11 PM ET.</span>
+        </div>
+        <div class="ctl" id="customBox" hidden>
+          <label for="cTok">Pirate Shop Access boost <output id="cTokO" class="num"></output></label>
+          <input type="range" id="cTok" min="1" max="1000" step="1" value="2">
+          <label for="cGold">Gold Outfit boost <output id="cGoldO" class="num"></output></label>
+          <input type="range" id="cGold" min="1" max="100" step="0.5" value="10">
+          <span class="hint">Players have rumored a 1000× token event. Epic has not confirmed it.</span>
+        </div>
+        <div class="divider"></div>
+        <h3>Extras</h3>
+        <div class="ctl">
+          <label for="squad">Squad size <output id="squadO" class="num"></output></label>
+          <input type="range" id="squad" min="1" max="4" step="1" value="1">
+          <span class="hint">Reports say a token found in a squad unlocks for the whole team, so teammates' chests count for you too.</span>
+        </div>
+        <div class="ctl">
+          <label for="end">Season end date</label>
+          <input type="date" id="end" value="2026-12-05">
+        </div>
+      </aside>
+
+      <div>
+        <div class="loot" id="loot"></div>
+        <div class="panel" style="margin-top:20px">
+          <p class="eyebrow">Chest log</p>
+          <h3 style="color:var(--gold);margin:2px 0 10px">Chests you've opened so far</h3>
+          <div class="counter">
+            <input type="number" id="opened" min="0" step="1" value="0" aria-label="Chests opened so far" class="num" inputmode="numeric">
+            <button type="button" class="btn" data-add="1">+1</button>
+            <button type="button" class="btn" data-add="10">+10</button>
+            <button type="button" class="btn ghost" id="resetOpened">Reset</button>
+          </div>
+          <p class="note" style="margin-top:8px">Saved in this browser only. Your real total is in the Quests tab under Treasure Hunt.</p>
+          <div class="history" id="history"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:linear-gradient(180deg,transparent,rgba(26,20,64,.6))">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Prize vault</p><h2>What your chests are worth</h2></div>
+      <p>Treasures can't be bought, so each one is valued at what a matching Item Shop item costs. V-Bucks convert to dollars at the pack price you pick below.</p>
+    </div>
+    <div class="charts">
+      <div class="panel">
+        <h3 style="color:var(--gold)">Pirate Shop Access chance, day by day</h3>
+        <p class="note" style="margin-top:4px">Same hours and chests each day. Only the Treasure Hour plan changes. Shaded columns are Saturdays.</p>
+        <div class="chart-box" id="lineChart"></div>
+        <div class="legend">
+          <span><i style="background:var(--gold)"></i>Your plan</span>
+          <span><i style="background:var(--r-epic)"></i>Treasure Hour every day</span>
+          <span><i style="background:var(--r-common)"></i>No Treasure Hour</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 style="color:var(--gold)">Expected value by treasure</h3>
+        <p class="note" style="margin:4px 0 14px">Your chance of getting it × its dollar value, added up across the remaining weeks.</p>
+        <div class="prize-rows" id="prizeRows"></div>
+        <div class="jackpot"><span>Full jackpot if you got everything</span><b class="num" id="jackpot">…</b></div>
+      </div>
+    </div>
+
+    <div class="shopcalc">
+      <div class="panel">
+        <h3 style="color:var(--gold)">Pirate Shop Access: two weeks of free Item Shop</h3>
+        <p class="hint" style="margin:6px 0 14px">The token lets you claim any V-Bucks item in the shop for 14 days. Many items stay in the shop for several days, so the value is the shop on day one plus only the <b>new</b> items added on each of the next 13 daily resets.</p>
+        <div class="ctl">
+          <label for="shopDaily">Items in the shop on a given day <output id="shopDailyO" class="num"></output></label>
+          <input type="range" id="shopDaily" min="100" max="400" step="5" value="250">
+        </div>
+        <div class="ctl">
+          <label for="shopNew">New items added per daily reset <output id="shopNewO" class="num"></output></label>
+          <input type="range" id="shopNew" min="5" max="80" step="1" value="25">
+        </div>
+        <div class="ctl">
+          <label for="shopAvg">Average price per item <output id="shopAvgO" class="num"></output></label>
+          <input type="range" id="shopAvg" min="300" max="1500" step="25" value="700">
+        </div>
+        <div class="ctl">
+          <label for="pack">V-Bucks pack used for dollar value</label>
+          <select id="pack">
+            <option value="8.99|800">800 V-Bucks for $8.99</option>
+            <option value="22.99|2400">2,400 V-Bucks for $22.99</option>
+            <option value="36.99|4500">4,500 V-Bucks for $36.99</option>
+            <option value="89.99|12500">12,500 V-Bucks for $89.99</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="eq" id="shopEq"></div>
+        <p class="note" style="margin-top:12px">Starting values: tracker PiTyUs counted 334 shop offers on Nov 8, 2026. We use 250 because bundles repeat items that are also sold one by one. Shop prices run from 300 to 2,000 V-Bucks, with most items under 1,000. Epic does not publish shop totals, so this is an estimate. Move the sliders if you track the shop yourself. Real-money offers and Battle Pass items can't be claimed and aren't counted.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <h3 style="color:var(--gold);margin-bottom:10px">How each treasure is valued</h3>
+      <div class="tablebox">
+        <table class="valtable">
+          <thead><tr><th>Treasure</th><th>Compared with</th><th style="text-align:right">V-Bucks</th><th style="text-align:right">Dollars</th></tr></thead>
+          <tbody id="valBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Crossbones Isle</p><h2>Chest routes</h2></div>
+    </div>
+    <div class="explain" style="margin-bottom:20px;font-size:15px">
+      <span><b>What is a chest route?</b> A landing plan: where to drop from the Battle Bus and which locations to loot in order, so you open as many chests as possible before the storm or other players stop you.</span>
+      <span><b>What does picking one do?</b> It draws the route on the map with numbered stops and sets <b>Chests per game</b> to what that route really gives. Not every spawn point has a chest each match, so that number is lower than the spawn count. Every odds card and the prize value then update to match.</span>
+    </div>
+    <div class="map-grid">
+      <div>
+        <div class="layers" role="group" aria-label="Map layers">
+          <label><input type="checkbox" id="lStd" checked><span class="sw" style="background:var(--gold)"></span>Standard chests</label>
+          <label><input type="checkbox" id="lBur" checked><span class="sw" style="background:#a0622a"></span>Buried chests</label>
+          <label><input type="checkbox" id="lRare" checked><span class="sw" style="background:var(--r-epic)"></span>Rare chests</label>
+          <label><input type="checkbox" id="lVault" checked><span class="sw" style="background:#5b6b8a"></span>Vaults</label>
+        </div>
+        <div class="map-box" id="mapBox">
+          <div class="zoom">
+            <button type="button" id="zIn" aria-label="Zoom in">+</button>
+            <button type="button" id="zOut" aria-label="Zoom out">−</button>
+            <button type="button" id="zReset" aria-label="Reset zoom" style="font-size:14px">⟲</button>
+          </div>
+          <div class="zoomlvl num" id="zoomLvl">1.0×</div>
+        </div>
+        <p class="note" style="margin-top:8px">Scroll, pinch or use + and − to zoom. Drag to move around. This is an illustrated fan map, not Epic's in-game map: locations are placed in roughly the right part of the island, and each location's dots show how many chest spawns it has, not their exact spots.</p>
+      </div>
+      <div>
+        <div class="routes" id="routes"></div>
+        <div class="panel poi-info" id="poiInfo"><p class="note">Tap a location on the map to see its chest counts.</p></div>
+        <div class="panel" style="margin-top:14px">
+          <h3 style="color:var(--gold);margin-bottom:8px">Farming tips</h3>
+          <ul class="tips">
+            <li><b>Play public matches.</b> Guides report the token does not drop in bot lobbies.</li>
+            <li><b>Save your best route for Treasure Hour.</b> Every chest in that window rolls boosted odds for the token, Gold Outfit and vehicle.</li>
+            <li><b>Grab vault keys.</b> Keys drop from chests. A vault adds 3 Rare Chests to your game in one stop.</li>
+            <li><b>Squad up.</b> More players looting means more chests per match, and a token reportedly unlocks for the whole team.</li>
+            <li><b>Skip "token tracker" apps.</b> No tool can see which chest holds a treasure.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="mbar" aria-live="polite">
+  <div><span class="k">Pirate Shop Access</span><span class="v num" id="mTok">…</span></div>
+  <div><span class="k">Prize value</span><span class="v num" id="mEV">…</span></div>
+  <div><span class="k">Chests / hr</span><span class="v num" id="mCph">…</span></div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span class="made">Made by Money Man Musa (FN User: progamer987612)</span>
+    <p><b style="color:var(--ink)">Fan-made tool. Not affiliated with or endorsed by Epic Games or the One Piece rights holders.</b> Drop odds are Epic's official per-chest rates, posted by Fortnite Status on Nov 7, 2026, and Epic says they haven't changed since launch except during Treasure Hours. Weekly treasures are assumed to reset every 7 days from the Nov 1 season start. Vault chests are assumed to roll treasures like any other chest. Chest counts come from community guides and vary between sources.</p>
+    <ul>
+      <li><a href="https://x.com/FortniteStatus/status/2119202610322227327" target="_blank" rel="noopener">Fortnite Status: official treasure drop rates</a></li>
+      <li><a href="https://x.com/HYPEX/status/2119203171616854029" target="_blank" rel="noopener">HYPEX: full odds list</a></li>
+      <li><a href="https://www.vice.com/en/article/fortnite-pirate-token-drop-rate-confirmed/" target="_blank" rel="noopener">Vice: normal and Treasure Hour odds</a></li>
+      <li><a href="https://timesaver.gg/blog/fortnite-treasure-hours" target="_blank" rel="noopener">Treasure Hours times and boosts</a> · <a href="https://www.theclick.gg/fortnite-treasure-hours-drop-rate-boosts/" target="_blank" rel="noopener">which treasures get boosted</a></li>
+      <li><a href="https://beebom.com/when-does-fortnite-treasure-hunters-mini-season-end/" target="_blank" rel="noopener">Season end date</a></li>
+      <li><a href="https://mmohuts.com/news/fortnite-is-cutting-v-bucks-amounts-in-its-packs-starting-march-19-2026" target="_blank" rel="noopener">V-Bucks pack sizes since March 19, 2026</a></li>
+      <li><a href="https://fortnite.pityus.net/" target="_blank" rel="noopener">PiTyUs: shop offer count</a> · <a href="https://fnbr.co/SHOP" target="_blank" rel="noopener">fnbr.co: daily shop prices</a></li>
+      <li><a href="https://www.pushsquare.com/news/2023/12/fortnite-massively-cuts-prices-of-criticised-rocket-racing-ps5-ps4-microtransactions" target="_blank" rel="noopener">Car bundle prices</a></li>
+      <li><a href="https://beebom.com/how-to-open-fortnite-vaults/" target="_blank" rel="noopener">Vaults and what's inside</a></li>
+      <li><a href="https://www.playerauctions.com/fortnite-guide/tips-guides/treasure-hunters-all-free-chest-rewards/" target="_blank" rel="noopener">Chest counts by location</a> · <a href="https://www.ofzenandcomputing.com/all-fortnite-treasure-hunt-chest-locations-and-free-rewards/" target="_blank" rel="noopener">buried and rare chests</a></li>
+      <li><a href="https://gameriv.com/fortnite-pirate-shop-tokens-let-lucky-players-claim-free-cosmetics-for-14-days/" target="_blank" rel="noopener">What Pirate Shop Access unlocks</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(() => {
+'use strict';
+const DAY = 86400000;
+const SEASON_START = new Date(2026, 10, 1);
+const RARE_PER_VAULT = 3;
+
+const ICONS = {
+  token: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M10.5 13.5v1.5M13.5 13.5v1.5M7.5 17l9-2M16.5 17l-9-2"/>',
+  outfit: '<circle cx="12" cy="6.5" r="3"/><path d="M6 21v-5a6 6 0 0 1 12 0v5"/><path d="M8 3.5l1.5 1 2.5-2 2.5 2 1.5-1"/>',
+  car: '<path d="M3 16v-3l2.5-5h13l2.5 5v3z"/><circle cx="7.5" cy="16.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/><path d="M7 11h10"/>',
+  pick: '<path d="M4 9c5-6 11-6 16-1"/><path d="M13 6.5L7 21"/>',
+  note: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  image: '<rect x="3" y="5" width="18" height="14"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/>',
+  gear: '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'
+};
+const RAR = {mythic:'Mythic', legendary:'Legendary', epic:'Epic', rare:'Rare', uncommon:'Uncommon', common:'Common'};
+
+// Official per-chest odds (Fortnite Status, Nov 7, 2026). vb = V-Bucks value of a comparable shop item.
+const ITEMS = [
+  {id:'token', name:'Pirate Shop Access', sub:'14 days of free Item Shop claims. Drops once.', odds:137500, boost:'token', weekly:false, rarity:'mythic', icon:'token', cmp:'Every new item in the shop over 14 days (see the calculator above)'},
+  {id:'gold', name:'Weekly Gold Outfit', sub:'A different gold skin each week.', odds:1562500, boost:'gold', weekly:true, vb:2000, rarity:'mythic', icon:'outfit', cmp:'Legendary shop outfit (top outfit price is 2,000)'},
+  {id:'vehicle', name:'Weekly Vehicle & Decal', sub:'Car body plus a matching decal.', odds:7813, boost:'vehicle', weekly:true, vb:1500, rarity:'legendary', icon:'car', cmp:'Car body + decal bundle (e.g. Cyclone bundle)'},
+  {id:'pickaxe', name:'Weekly Pickaxe or Back Bling', sub:'One cosmetic per week.', odds:568, weekly:true, vb:700, rarity:'epic', icon:'pick', cmp:'Average of a pickaxe (800) and a back bling (600)'},
+  {id:'jam', name:'Weekly Jam Track', sub:'Playable in Festival and the lobby.', odds:391, weekly:true, vb:500, rarity:'rare', icon:'note', cmp:'Jam Track (every track is 500)'},
+  {id:'loading', name:'Weekly Loading Screen', sub:'One new screen each week.', odds:272, weekly:true, vb:0, rarity:'uncommon', icon:'image', cmp:'Not sold on its own in the shop, so no dollar value'},
+  {id:'gizmo', name:'Gizmo (any)', sub:'In-match item. The only treasure that can repeat.', odds:127, weekly:false, repeat:true, vb:0, rarity:'common', icon:'gear', cmp:'Used up during the match, so no dollar value'}
+];
+const PRESETS = {
+  standard: {token:1.5, gold:7.5, vehicle:10},
+  late: {token:2, gold:10, vehicle:10}
+};
+
+// ---------- state ----------
+const DEFAULTS = {hours:3, gph:2.5, cpg:10, vaultOn:false, vaults:1, th:'sat', thHours:2, preset:'standard', cTok:2, cGold:10, squad:1, end:'2026-12-05', opened:0, shopDaily:250, shopNew:25, shopAvg:700, pack:'8.99|800'};
+let S = Object.assign({}, DEFAULTS);
+try { const saved = JSON.parse(localStorage.getItem('treasureOdds2') || 'null'); if (saved) S = Object.assign(S, saved); } catch (e) {}
+if (!PRESETS[S.preset] && S.preset !== 'custom') S.preset = 'standard';
+const save = () => { try { localStorage.setItem('treasureOdds2', JSON.stringify(S)); } catch (e) {} };
+
+const $ = id => document.getElementById(id);
+const fmtInt = n => Math.round(n).toLocaleString('en-US');
+const usd = n => n >= 1000 ? '$' + fmtInt(n) : '$' + n.toFixed(2);
+const vbUsd = () => { const [d, v] = S.pack.split('|').map(Number); return d / v; };
+const shopVB = () => S.shopDaily + 13 * S.shopNew;
+const tokenVB = () => shopVB() * S.shopAvg;
+const cpgTotal = () => S.cpg + (S.vaultOn ? S.vaults * RARE_PER_VAULT : 0);
+const cph = () => S.gph * cpgTotal();
+
+function pct(p) {
+  if (!isFinite(p) || p <= 0) return '0%';
+  if (p >= 0.9995) return '>99.9%';
+  if (p >= 0.1) return (p * 100).toFixed(1) + '%';
+  if (p >= 0.01) return (p * 100).toFixed(2) + '%';
+  if (p >= 0.0001) return (p * 100).toFixed(3) + '%';
+  return '1 in ' + fmtInt(1 / p);
+}
+function oneIn(p) {
+  if (!isFinite(p) || p <= 0) return 'no chance yet';
+  if (p >= 0.5) return 'better than a coin flip';
+  return '1 in ' + fmtInt(1 / p);
+}
+function oneInLog(l) {
+  if (!isFinite(l)) return 'No chance';
+  if (l > -6) return '1 in ' + fmtInt(Math.pow(10, -l));
+  const e = Math.floor(-l), m = Math.pow(10, -l - e);
+  return '1 in ' + m.toFixed(1) + '×10<sup>' + e + '</sup>';
+}
+const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+function parseEnd() { const [y, m, d] = (S.end || DEFAULTS.end).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); }
+function mult(item) {
+  if (!item.boost) return 1;
+  if (S.preset === 'custom') return item.boost === 'token' ? S.cTok : item.boost === 'gold' ? S.cGold : 10;
+  return PRESETS[S.preset][item.boost] || 1;
+}
+
+function plan(mode) {
+  const c = cph(), days = [], end = parseEnd();
+  for (let d = startOfDay(new Date()); d < end; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
+    const thDay = mode === 'daily' || (mode === 'sat' && d.getDay() === 6);
+    const th = thDay ? Math.min(S.thHours, S.hours) : 0;
+    const dayIdx = Math.round((d - SEASON_START) / DAY);
+    days.push({date:d, n:(S.hours - th) * c, b:th * c, week:Math.floor(dayIdx / 7)});
+  }
+  return days;
+}
+const logMiss = (n, b, p, m) => n * Math.log1p(-p) + b * Math.log1p(-Math.min(p * m, 0.999999));
+
+function compute(mode) {
+  const days = plan(mode), weeks = new Map(), rate = vbUsd();
+  let N = 0, B = 0;
+  for (const d of days) { N += d.n; B += d.b; const w = weeks.get(d.week) || {n:0, b:0}; w.n += d.n; w.b += d.b; weeks.set(d.week, w); }
+  const res = {days, N, B, weeks:weeks.size, items:{}};
+  let log10All = 0, ev = 0;
+  for (const it of ITEMS) {
+    const p = 1 / it.odds, m = mult(it), r = {p, m};
+    if (it.weekly) {
+      let lmSum = 0, l10 = 0, e = 0;
+      for (const w of weeks.values()) {
+        const lm = logMiss(w.n, w.b, p, m), pw = -Math.expm1(lm);
+        lmSum += lm; e += pw * it.vb * rate; l10 += pw > 0 ? Math.log10(pw) : -Infinity;
+      }
+      r.any = -Math.expm1(lmSum); r.allLog10 = weeks.size ? l10 : -Infinity; r.ev = e; r.expected = N * p + B * p * m;
+      log10All += r.allLog10;
+    } else if (it.id === 'token') {
+      r.any = -Math.expm1(logMiss(N * S.squad, B * S.squad, p, m));
+      r.ev = r.any * tokenVB() * rate;
+      log10All += r.any > 0 ? Math.log10(r.any) : -Infinity;
+      let acc = 0; r.series = days.map(d => { acc += logMiss(d.n * S.squad, d.b * S.squad, p, m); return -Math.expm1(acc); });
+    } else {
+      r.any = -Math.expm1(logMiss(N, B, p, m)); r.expected = N * p + B * p * m; r.ev = 0;
+      log10All += r.any > 0 ? Math.log10(r.any) : -Infinity;
+    }
+    res.items[it.id] = r; ev += r.ev;
+  }
+  res.log10All = log10All; res.ev = ev;
+  return res;
+}
+
+// ---------- cards ----------
+$('loot').innerHTML = ITEMS.map(it => `
+  <article class="card" style="--rc:var(--r-${it.rarity})" id="card-${it.id}">
+    <div class="top">
+      <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[it.icon]}</svg></div>
+      <div style="min-width:0"><div class="rar">${RAR[it.rarity]}</div><h3>${it.name}</h3></div>
+    </div>
+    <p class="sub">${it.sub}</p>
+    <div class="odds"><span class="pill num">1 in ${fmtInt(it.odds)} per chest</span><span class="pill ok">Official odds</span><span class="pill" data-boost></span></div>
+    <div class="chance"><span class="big num" data-chance>…</span><span class="lbl" data-lbl></span></div>
+    <div class="bar"><i data-bar></i></div>
+    <dl class="facts" data-facts></dl>
+  </article>`).join('');
+
+function hoursFmt(h) {
+  if (!isFinite(h)) return '—';
+  if (h < 1) return Math.round(h * 60) + ' min';
+  if (h < 48) return h.toFixed(1) + ' hrs';
+  return fmtInt(h) + ' hrs';
+}
+function renderCards(R) {
+  const c = cph(), rate = vbUsd();
+  for (const it of ITEMS) {
+    const r = R.items[it.id], card = $('card-' + it.id), boost = card.querySelector('[data-boost]');
+    if (it.boost && S.th !== 'off') { boost.textContent = r.m + '× in Treasure Hour'; boost.className = 'pill boost'; }
+    else if (it.boost) { boost.textContent = 'Treasure Hour skipped'; boost.className = 'pill'; }
+    else { boost.textContent = 'No Treasure Hour boost'; boost.className = 'pill'; }
+    card.querySelector('[data-chance]').textContent = pct(r.any);
+    card.querySelector('[data-lbl]').textContent = it.weekly ? 'at least one week' : it.repeat ? 'at least one' : 'by season end';
+    card.querySelector('[data-bar]').style.width = Math.min(100, r.any * 100) + '%';
+    const n50 = Math.log(0.5) / Math.log1p(-r.p);
+    const n50b = Math.log(0.5) / Math.log1p(-Math.min(r.p * r.m, 0.999999));
+    let f = `<dt>Chests for a 50% shot</dt><dd>${fmtInt(n50)}</dd><dt>Time at your pace</dt><dd>${c ? hoursFmt(n50 / c) : '—'}</dd>`;
+    if (it.boost) f += `<dt>Chests at boosted odds</dt><dd>${fmtInt(n50b)}</dd>`;
+    if (it.weekly) f += `<dt>Every weekly version (${R.weeks} wks)</dt><dd>${oneInLog(r.allLog10)}</dd><dt>Expected drops</dt><dd>${r.expected < 10 ? r.expected.toFixed(2) : fmtInt(r.expected)}</dd>`;
+    if (it.repeat) f += `<dt>Expected Gizmos</dt><dd>${fmtInt(r.expected)}</dd>`;
+    if (it.id === 'token') f += `<dt>Est. value</dt><dd>${usd(tokenVB() * rate)}</dd>`;
+    else f += `<dt>Est. value</dt><dd>${it.vb ? usd(it.vb * rate) : '$0'}</dd>`;
+    card.querySelector('[data-facts]').innerHTML = f;
+  }
+}
+function renderHero(R) {
+  const tok = R.items.token;
+  $('hTok').textContent = pct(tok.any);
+  $('hTokS').textContent = tok.any > 0 ? oneIn(tok.any) + (S.squad > 1 ? ', counting your squad\'s chests' : '') : 'Add some playtime to get a chance';
+  $('hEV').textContent = usd(R.ev);
+  $('hChests').textContent = fmtInt(R.N + R.B);
+  $('hChestsS').textContent = fmtInt(R.B) + ' at Treasure Hour odds · ' + R.days.length + ' days left';
+  $('hAll').innerHTML = oneInLog(R.log10All);
+  $('mTok').textContent = pct(tok.any); $('mEV').textContent = usd(R.ev); $('mCph').textContent = fmtInt(cph());
+}
+function renderHistory() {
+  const n = S.opened;
+  const t = [
+    ['Chests logged', fmtInt(n), 'opened so far'],
+    ['Gizmos expected', (n / 127).toFixed(1), 'from those chests'],
+    ['Loading Screen', pct(-Math.expm1(n * Math.log1p(-1 / 272))), 'chance of at least one by now'],
+    ['Pirate token', pct(-Math.expm1(n * Math.log1p(-1 / 137500))), 'chance you\'d have hit it by now']
+  ];
+  $('history').innerHTML = t.map(x => `<div class="tile"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+}
+
+// ---------- charts ----------
+function niceMax(v) { if (v <= 0) return 0.01; const e = Math.pow(10, Math.floor(Math.log10(v))); for (const k of [1, 2, 2.5, 5, 10]) if (k * e >= v) return k * e; return 10 * e; }
+function renderLine(R, Rd, Ro) {
+  const W = 640, H = 280, L = 56, Rt = 16, T = 16, Bm = 40;
+  const a = R.items.token.series, b = Rd.items.token.series, c = Ro.items.token.series, n = a.length, box = $('lineChart');
+  if (!n) { box.innerHTML = '<p class="note" style="padding:20px 0">The season end date has passed. Pick a later date.</p>'; return; }
+  const ymax = Math.min(1, niceMax(Math.max(a[n - 1], b[n - 1], c[n - 1], 1e-6)));
+  const x = i => L + (n === 1 ? 0 : i / (n - 1)) * (W - L - Rt);
+  const y = v => T + (1 - v / ymax) * (H - T - Bm);
+  const path = s => s.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join('');
+  let g = '';
+  R.days.forEach((d, i) => { if (d.date.getDay() === 6) g += `<rect x="${x(i) - 4}" y="${T}" width="8" height="${H - T - Bm}" fill="rgba(247,201,72,.1)"/>`; });
+  for (let k = 0; k <= 4; k++) {
+    const v = ymax * k / 4, yy = y(v), pv = v * 100;
+    g += `<line x1="${L}" x2="${W - Rt}" y1="${yy}" y2="${yy}" stroke="rgba(247,201,72,.12)"/><text x="${L - 8}" y="${yy + 4}" text-anchor="end" fill="#b3a8d6" font-size="12">${pv.toFixed(pv < 1 ? 2 : pv < 10 ? 1 : 0)}%</text>`;
+  }
+  const step = Math.max(1, Math.ceil(n / 6));
+  for (let i = 0; i < n; i += step) g += `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" fill="#b3a8d6" font-size="12">${R.days[i].date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}</text>`;
+  const area = path(a) + `L${x(n - 1)} ${y(0)}L${x(0)} ${y(0)}Z`;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Chance of Pirate Shop Access by day">
+    <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7c948" stop-opacity=".35"/><stop offset="1" stop-color="#f7c948" stop-opacity="0"/></linearGradient></defs>
+    ${g}<path d="${area}" fill="url(#ga)"/>
+    <path d="${path(c)}" fill="none" stroke="#9ea6bb" stroke-width="2" stroke-dasharray="5 5"/>
+    <path d="${path(b)}" fill="none" stroke="#b866f2" stroke-width="2.5"/>
+    <path d="${path(a)}" fill="none" stroke="#f7c948" stroke-width="3.5"/>
+    <circle cx="${x(n - 1)}" cy="${y(a[n - 1])}" r="6" fill="#ffe9a3" stroke="#6b3d05" stroke-width="2"/>
+    <text x="${x(n - 1) - 10}" y="${Math.max(T + 12, y(a[n - 1]) - 12)}" text-anchor="end" fill="#ffe9a3" font-size="14" font-weight="800">${pct(a[n - 1])}</text>
+  </svg>`;
+}
+function renderPrizes(R) {
+  const rate = vbUsd();
+  const rows = ITEMS.filter(it => it.id !== 'gizmo' && it.id !== 'loading').map(it => ({it, v:R.items[it.id].ev}));
+  const max = Math.max(...rows.map(r => r.v), 0.01);
+  $('prizeRows').innerHTML = rows.map(({it, v}) => `
+    <div class="prow" style="--rc:var(--r-${it.rarity})"><span class="name">${it.name.replace('Weekly ', '')}</span><span class="track"><i style="width:${(v / max * 100).toFixed(1)}%"></i></span><span class="val">${usd(v)}</span></div>`).join('');
+  const weeklyVB = ITEMS.filter(i => i.weekly).reduce((s, i) => s + i.vb, 0) * R.weeks;
+  $('jackpot').textContent = usd((weeklyVB + tokenVB()) * rate);
+  const u = shopVB();
+  $('shopEq').innerHTML = `
+    <div class="row"><span>Items in the shop on day 1</span><b>${fmtInt(S.shopDaily)}</b></div>
+    <div class="row"><span>New items over the next 13 resets (13 × ${S.shopNew})</span><b>+ ${fmtInt(13 * S.shopNew)}</b></div>
+    <div class="row"><span>Different items you could claim</span><b>${fmtInt(u)}</b></div>
+    <div class="row"><span>× average price</span><b>${fmtInt(S.shopAvg)} V-Bucks</b></div>
+    <div class="row"><span>Total V-Bucks</span><b>${fmtInt(tokenVB())}</b></div>
+    <div class="row"><span>Dollars per V-Buck (${S.pack.split('|').map((v, i) => i ? fmtInt(+v) + ' V' : '$' + v).join(' for ')})</span><b>$${rate.toFixed(4)}</b></div>
+    <div class="row total"><span>Pirate Shop Access value</span><b>${usd(tokenVB() * rate)}</b></div>`;
+  $('valBody').innerHTML = ITEMS.map(it => {
+    const vb = it.id === 'token' ? tokenVB() : it.vb;
+    return `<tr><td><b>${it.name}</b></td><td>${it.cmp}</td><td class="n">${vb ? fmtInt(vb) : '—'}</td><td class="n">${vb ? usd(vb * rate) : '$0'}</td></tr>`;
+  }).join('');
+}
+
+// ---------- controls ----------
+const ranges = {
+  hours: v => v + ' h', gph: v => v, cpg: v => v, vaults: v => v + (v === 1 ? ' vault' : ' vaults'),
+  thHours: v => v + ' h', cTok: v => v + '×', cGold: v => v + '×',
+  squad: v => ['', 'Solo', 'Duo', 'Trio', 'Squad'][v],
+  shopDaily: v => fmtInt(v), shopNew: v => fmtInt(v), shopAvg: v => fmtInt(v) + ' V'
+};
+const paintRange = el => el.style.setProperty('--fill', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
+for (const id of Object.keys(ranges)) {
+  const el = $(id); el.value = S[id];
+  el.addEventListener('input', () => { S[id] = parseFloat(el.value); update(); });
+}
+document.querySelectorAll('[data-th]').forEach(b => b.addEventListener('click', () => { S.th = b.dataset.th; update(); }));
+[['preset', 'preset'], ['pack', 'pack']].forEach(([id, k]) => { $(id).value = S[k]; $(id).addEventListener('change', e => { S[k] = e.target.value; update(); }); });
+$('vaultOn').checked = S.vaultOn;
+$('vaultOn').addEventListener('change', e => { S.vaultOn = e.target.checked; update(); });
+$('end').value = S.end;
+$('end').addEventListener('change', e => { if (e.target.value) { S.end = e.target.value; update(); } });
+$('opened').value = S.opened;
+$('opened').addEventListener('input', e => { S.opened = Math.max(0, parseInt(e.target.value, 10) || 0); renderHistory(); save(); });
+document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => { S.opened += +b.dataset.add; $('opened').value = S.opened; renderHistory(); save(); }));
+$('resetOpened').addEventListener('click', () => { S.opened = 0; $('opened').value = 0; renderHistory(); save(); });
+
+function update() {
+  for (const id of Object.keys(ranges)) { const el = $(id); if (+el.value !== +S[id]) el.value = S[id]; paintRange(el); $(id + 'O').textContent = ranges[id](S[id]); }
+  $('cpgTot').textContent = fmtInt(cpgTotal());
+  $('cphO').textContent = fmtInt(cph());
+  $('vaultBox').hidden = !S.vaultOn;
+  document.querySelectorAll('[data-th]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.th === S.th)));
+  $('customBox').hidden = S.preset !== 'custom';
+  $('thHours').disabled = S.th === 'off';
+  $('thHint').textContent = S.th === 'daily' ? 'Played at boosted odds every day in this what-if.' : 'Per Saturday. Up to 4 boosted hours across both windows.';
+  const R = compute(S.th), Rd = compute('daily'), Ro = compute('off');
+  renderHero(R); renderCards(R); renderLine(R, Rd, Ro); renderPrizes(R); renderHistory(); renderRouteMeta();
+  save();
+}
+
+// ---------- countdowns ----------
+function dhm(ms) { const m = Math.max(0, Math.floor(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60); return d ? `${d}d ${h}h ${m % 60}m` : `${h}h ${m % 60}m`; }
+function tick() {
+  const now = Date.now();
+  // Reported windows: Sat 2–4 PM ET (19:00 UTC Sat) and Sat 9–11 PM ET (02:00 UTC Sun). EST = UTC-5 after Nov 1.
+  const wins = [];
+  const t0 = new Date(now), base = Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth(), t0.getUTCDate());
+  for (let k = -1; k < 9; k++) {
+    const day = base + k * DAY, wd = new Date(day).getUTCDay();
+    if (wd === 6) wins.push({s:day + 19 * 3600000, label:'Sat 2 PM ET'});
+    if (wd === 0) wins.push({s:day + 2 * 3600000, label:'Sat 9 PM ET'});
+  }
+  const live = wins.find(w => now >= w.s && now < w.s + 7200000);
+  const next = wins.filter(w => w.s > now).sort((a, b) => a.s - b.s)[0];
+  const chip = $('chipTH');
+  if (live) { chip.classList.add('live'); $('thCountdown').textContent = 'LIVE · ends in ' + dhm(live.s + 7200000 - now); }
+  else { chip.classList.remove('live'); $('thCountdown').textContent = next ? next.label + ' · ' + dhm(next.s - now) : '—'; }
+  const end = parseEnd().getTime();
+  $('seasonCountdown').textContent = end > now ? dhm(end - now) : 'Ended';
+}
+
+// ---------- map ----------
+const POIS = [
+  {id:'windmill', name:'Windmill Village', x:370, y:215, std:null, bur:null, rare:null, kind:'village'},
+  {id:'fortune', name:"Fortune's Fort", x:585, y:290, std:47, bur:null, rare:5, kind:'fort'},
+  {id:'chest', name:'The Chest', x:800, y:340, std:10, bur:34, rare:0, kind:'dig'},
+  {id:'neisle', name:'NE Islet', x:888, y:128, std:null, bur:11, rare:null, kind:'dig'},
+  {id:'arlong', name:'Arlong Park', x:220, y:345, std:39, bur:2, rare:0, kind:'park'},
+  {id:'logue', name:'Loguetown', x:455, y:475, std:41, bur:null, rare:4, kind:'town'},
+  {id:'plunder', name:'Plunder Port', x:150, y:565, std:null, bur:null, rare:0, kind:'port'},
+  {id:'rubber', name:'Rubber Resort', x:305, y:695, std:47, bur:2, rare:6, kind:'resort'},
+  {id:'lantern', name:'Lantern Landing', x:715, y:565, std:45, bur:null, rare:4, kind:'town'},
+  {id:'cursed', name:'Cursed Cavern', x:630, y:785, std:28, bur:4, rare:0, kind:'cave'},
+  {id:'busy', name:'Busy Bay', x:455, y:855, std:null, bur:null, rare:null, kind:'port'}
+];
+// Vaults: count is from guides (9); placements are illustrative.
+const VAULTS = [[600, 255], [470, 505], [330, 720], [745, 590], [190, 590], [250, 365], [655, 805], [480, 870], [395, 235]];
+const ROADS = [['windmill', 'fortune'], ['fortune', 'chest'], ['fortune', 'logue'], ['arlong', 'logue'], ['arlong', 'windmill'], ['logue', 'lantern'], ['logue', 'rubber'], ['plunder', 'rubber'], ['rubber', 'busy'], ['busy', 'cursed'], ['cursed', 'lantern'], ['lantern', 'chest'], ['plunder', 'arlong']];
+const ROUTES = [
+  {id:'max', name:'Max chests', stops:['fortune', 'logue', 'rubber'], cpg:18, spawns:135, why:'Three of the densest locations in one north-to-south line. Most chests per game, but expect fights at Rubber Resort.'},
+  {id:'rare', name:'Rare-chest hunter', stops:['rubber', 'logue', 'lantern'], cpg:14, spawns:147, why:'Hits the most Rare Chest spawns (6 + 4 + 4) plus the Frog Statue puzzle at Lantern Landing.'},
+  {id:'buried', name:'Buried sweep', stops:['neisle', 'chest', 'lantern'], cpg:15, spawns:100, why:'45 buried chest spawns between the NE Islet and The Chest. Quieter, but digging takes time.'},
+  {id:'vault', name:'Vault run', stops:['arlong', 'logue', 'lantern'], cpg:13, spawns:125, vaults:2, why:'Loot chests on the way to two vaults. Turns on the vault option, adding 6 Rare Chests per game.'},
+  {id:'quiet', name:'Low-traffic loop', stops:['cursed', 'busy', 'rubber'], cpg:11, spawns:75, why:'Starts on the quiet south coast and works west. Fewer early fights, fewer chests.'}
+];
+let activeRoute = null;
+const byId = Object.fromEntries(POIS.map(p => [p.id, p]));
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+const ISLAND = 'M150 260 C230 120 430 110 560 150 C700 190 820 210 870 330 C930 470 860 600 820 700 C770 830 640 920 470 920 C320 920 170 850 110 720 C60 600 70 400 150 260Z';
+const LAND = 'M175 280 C250 150 430 140 560 175 C690 210 800 235 845 340 C900 470 835 595 795 690 C750 810 630 893 470 893 C330 893 195 828 138 710 C92 600 102 410 175 280Z';
+function inEll(x, y, cx, cy, rx, ry) { return ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1; }
+
+function buildMap() {
+  const r = rng(42);
+  // terrain
+  const DESERT = [720, 700, 150, 120], SWAMP = [610, 790, 95, 60], SNOW = [655, 205, 110, 70], FOREST = [[230, 470, 110, 150], [430, 300, 70, 55], [560, 650, 80, 55]];
+  let trees = '';
+  for (let i = 0; i < 1400; i++) {
+    const x = 110 + r() * 780, y = 130 + r() * 780;
+    const forest = FOREST.some(f => inEll(x, y, ...f));
+    if (!forest && r() > 0.22) continue;
+    if (inEll(x, y, ...DESERT) || inEll(x, y, ...SNOW) || inEll(x, y, 560, 420, 70, 42)) continue;
+    if (POIS.some(p => Math.hypot(p.x - x, p.y - y) < 62)) continue;
+    const s = 5 + r() * 5;
+    trees += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${s.toFixed(1)}" fill="${inEll(x, y, ...SWAMP) ? '#2c3d2b' : '#24612f'}"/><circle cx="${(x - s * .3).toFixed(1)}" cy="${(y - s * .3).toFixed(1)}" r="${(s * .5).toFixed(1)}" fill="${inEll(x, y, ...SWAMP) ? '#41573b' : '#3f8f47'}"/>`;
+  }
+  let cacti = '';
+  for (let i = 0; i < 40; i++) { const a = r() * 6.283, d = Math.sqrt(r()); const x = DESERT[0] + Math.cos(a) * d * DESERT[2] * .9, y = DESERT[1] + Math.sin(a) * d * DESERT[3] * .9; if (Math.hypot(715 - x, 565 - y) < 60) continue; cacti += `<path d="M${x.toFixed(0)} ${y.toFixed(0)}v-12M${(x - 4).toFixed(0)} ${(y - 8).toFixed(0)}v-4h8v-3" stroke="#5f8a3a" stroke-width="3" fill="none" stroke-linecap="round"/>`; }
+  let peaks = '';
+  [[600, 215, 50], [655, 185, 62], [715, 215, 48], [690, 245, 36], [625, 245, 34]].forEach(([x, y, s]) => {
+    peaks += `<path d="M${x - s} ${y + s * .55} L${x} ${y - s * .55} L${x + s} ${y + s * .55}Z" fill="#8c8f9c" stroke="#5b5e6c" stroke-width="2"/><path d="M${x - s * .33} ${y - s * .18} L${x} ${y - s * .55} L${x + s * .33} ${y - s * .18} L${x + s * .1} ${y - s * .25} L${x - s * .05} ${y - s * .12}Z" fill="#f4f6fb"/>`;
+  });
+  // roads
+  let roads = '';
+  for (const [a, b] of ROADS) {
+    const p = byId[a], q = byId[b], mx = (p.x + q.x) / 2 + (r() - .5) * 70, my = (p.y + q.y) / 2 + (r() - .5) * 70;
+    const d = `M${p.x} ${p.y} Q${mx.toFixed(0)} ${my.toFixed(0)} ${q.x} ${q.y}`;
+    roads += `<path d="${d}" stroke="#6e5a3a" stroke-width="11" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#d6bb82" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+  }
+  // buildings
+  let blds = '';
+  POIS.forEach(p => {
+    if (p.kind === 'dig') { for (let i = 0; i < 6; i++) { const x = p.x + (r() - .5) * 90, y = p.y + (r() - .5) * 70; blds += `<path d="M${(x - 6).toFixed(0)} ${(y - 6).toFixed(0)}l12 12M${(x + 6).toFixed(0)} ${(y - 6).toFixed(0)}l-12 12" stroke="#b3261e" stroke-width="3.5" stroke-linecap="round"/>`; } return; }
+    if (p.kind === 'cave') { blds += `<ellipse cx="${p.x}" cy="${p.y + 4}" rx="44" ry="26" fill="#4a4157"/><ellipse cx="${p.x}" cy="${p.y + 8}" rx="22" ry="13" fill="#140f1c"/>`; return; }
+    const count = p.kind === 'town' ? 18 : p.kind === 'fort' ? 10 : 12;
+    if (p.kind === 'fort') blds += `<rect x="${p.x - 52}" y="${p.y - 40}" width="104" height="82" fill="none" stroke="#7c6a55" stroke-width="7"/>` + [[-52, -40], [52, -40], [-52, 42], [52, 42]].map(([dx, dy]) => `<rect x="${p.x + dx - 9}" y="${p.y + dy - 9}" width="18" height="18" fill="#9b8a72" stroke="#4a3d2c" stroke-width="2"/>`).join('');
+    if (p.kind === 'resort') blds += `<rect x="${p.x + 18}" y="${p.y + 10}" width="44" height="26" rx="8" fill="#5fc4ea" stroke="#fff" stroke-width="3"/>`;
+    if (p.kind === 'park') blds += `<circle cx="${p.x - 30}" cy="${p.y + 20}" r="22" fill="none" stroke="#e8a33b" stroke-width="5"/><path d="M${p.x + 10} ${p.y + 40}q20-50 40 0" stroke="#d9534f" stroke-width="5" fill="none"/>`;
+    if (p.kind === 'village') blds += `<g transform="translate(${p.x + 40} ${p.y - 10})"><rect x="-6" y="-4" width="12" height="26" fill="#e8dcc0" stroke="#4a3d2c" stroke-width="2"/><path d="M0 -4l-20-14M0 -4l20-14M0 -4l-14 18M0 -4l14 18" stroke="#6e5a3a" stroke-width="4"/></g>`;
+    if (p.kind === 'port') blds += [0, 1, 2].map(i => `<rect x="${p.x - 60 + i * 34}" y="${p.y + 30}" width="10" height="48" fill="#8a5a2b" stroke="#3a2410" stroke-width="2"/>`).join('');
+    for (let i = 0; i < count; i++) {
+      const a = r() * 6.283, d = 14 + r() * 42, x = p.x + Math.cos(a) * d, y = p.y + Math.sin(a) * d * .8, w = 12 + r() * 12, h = 10 + r() * 10;
+      const roof = ['#c2553a', '#3d6fa8', '#b8873b', '#7a4b8c'][Math.floor(r() * 4)];
+      blds += `<rect x="${(x - w / 2).toFixed(0)}" y="${(y - h / 2).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="${roof}" stroke="#22160a" stroke-width="1.5" transform="rotate(${((r() - .5) * 30).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)})"/>`;
+    }
+  });
+  // chests
+  const dots = {std:'', bur:'', rare:''};
+  POIS.forEach(p => {
+    for (const [k, count, fill, rad] of [['std', p.std ?? 14, '#f7c948', 50], ['bur', p.bur ?? 0, '#a0622a', 72], ['rare', p.rare ?? 0, '#b866f2', 38]]) {
+      for (let j = 0; j < count; j++) {
+        const a = r() * 6.283, d = Math.sqrt(r()) * rad + 8, x = (p.x + Math.cos(a) * d).toFixed(1), y = (p.y + Math.sin(a) * d).toFixed(1);
+        dots[k] += k === 'rare' ? `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" fill="${fill}" stroke="#1a0f00" stroke-width="1.5" transform="rotate(45 ${x} ${y})"/>`
+          : k === 'bur' ? `<path d="M${x - 4} ${y - 4}l8 8M${+x + 4} ${y - 4}l-8 8" stroke="${fill}" stroke-width="3" stroke-linecap="round"/>`
+          : `<rect x="${x - 4}" y="${y - 3}" width="8" height="6" fill="${fill}" stroke="#1a0f00" stroke-width="1.2" ${p.std == null ? 'opacity=".45"' : ''}/>`;
+      }
+    }
+  });
+  const vaults = VAULTS.map(([x, y]) => `<g><circle cx="${x}" cy="${y}" r="10" fill="#5b6b8a" stroke="#e7ecf7" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="4" fill="none" stroke="#e7ecf7" stroke-width="2"/><path d="M${x} ${y - 4}v-3M${x} ${y + 4}v3M${x - 4} ${y}h-3M${x + 4} ${y}h3" stroke="#e7ecf7" stroke-width="1.5"/></g>`).join('');
+  // grid
+  let grid = '';
+  for (let i = 1; i < 10; i++) grid += `<line x1="${i * 100}" y1="0" x2="${i * 100}" y2="1000"/><line x1="0" y1="${i * 100}" x2="1000" y2="${i * 100}"/>`;
+  let gl = '';
+  for (let i = 0; i < 10; i++) gl += `<text x="${i * 100 + 50}" y="22" text-anchor="middle">${'ABCDEFGHIJ'[i]}</text><text x="14" y="${i * 100 + 56}" text-anchor="middle">${i + 1}</text>`;
+  const pois = POIS.map(p => `
+    <g class="poi" tabindex="0" role="button" aria-label="${p.name}" data-poi="${p.id}">
+      <circle class="ring" cx="${p.x}" cy="${p.y}" r="13" fill="#1a0f00" stroke="#f7c948" stroke-width="4"/>
+      <circle cx="${p.x}" cy="${p.y}" r="5.5" fill="#ffe9a3"/>
+      <text x="${p.x}" y="${p.y - 24}" text-anchor="middle">${p.name}</text>
+    </g>`).join('');
+
+  const svg = `<svg viewBox="0 0 1000 1000" id="mapSvg" role="img" aria-label="Illustrated map of Crossbones Isle with chest spawns, vaults and routes">
+    <defs>
+      <pattern id="waves" width="60" height="30" patternUnits="userSpaceOnUse"><path d="M0 15 Q15 5 30 15 T60 15" fill="none" stroke="#1d4f8a" stroke-width="2"/></pattern>
+      <radialGradient id="land" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#5cb865"/><stop offset="1" stop-color="#3a8a44"/></radialGradient>
+      <radialGradient id="shallow" cx="50%" cy="50%" r="50%"><stop offset=".75" stop-color="#2a74b8"/><stop offset="1" stop-color="#123a6b"/></radialGradient>
+      <clipPath id="landClip"><path d="${LAND}"/></clipPath>
+      <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ffe9a3" stroke="#6b3d05" stroke-width="1"/></marker>
+    </defs>
+    <g id="mapView">
+      <rect x="-500" y="-500" width="2000" height="2000" fill="#123a6b"/>
+      <rect x="-500" y="-500" width="2000" height="2000" fill="url(#waves)"/>
+      <ellipse cx="490" cy="525" rx="470" ry="460" fill="url(#shallow)" opacity=".7"/>
+      <ellipse cx="888" cy="128" rx="72" ry="52" fill="#2a74b8" opacity=".7"/>
+      <path d="${ISLAND}" fill="#ecd394"/>
+      <path d="${LAND}" fill="url(#land)"/>
+      <g clip-path="url(#landClip)">
+        <ellipse cx="${DESERT[0]}" cy="${DESERT[1]}" rx="${DESERT[2]}" ry="${DESERT[3]}" fill="#dcbc72"/>
+        <ellipse cx="${DESERT[0] + 30}" cy="${DESERT[1] + 20}" rx="${DESERT[2] * .6}" ry="${DESERT[3] * .5}" fill="#e6c983"/>
+        <ellipse cx="${SWAMP[0]}" cy="${SWAMP[1]}" rx="${SWAMP[2]}" ry="${SWAMP[3]}" fill="#3e4b37"/>
+        <ellipse cx="${SNOW[0]}" cy="${SNOW[1]}" rx="${SNOW[2]}" ry="${SNOW[3]}" fill="#9aa08e"/>
+        ${FOREST.map(f => `<ellipse cx="${f[0]}" cy="${f[1]}" rx="${f[2]}" ry="${f[3]}" fill="#327a3c"/>`).join('')}
+        <path d="M600 160 C590 260 560 330 520 380 C480 430 470 520 500 600 C520 660 560 720 560 900" fill="none" stroke="#3f8fd0" stroke-width="18" stroke-linecap="round"/>
+        <path d="M600 160 C590 260 560 330 520 380 C480 430 470 520 500 600 C520 660 560 720 560 900" fill="none" stroke="#6cb6ea" stroke-width="8" stroke-linecap="round"/>
+        <path d="M170 450 C240 470 300 520 340 560 C380 600 420 610 470 590" fill="none" stroke="#3f8fd0" stroke-width="11" stroke-linecap="round"/>
+        <ellipse cx="560" cy="420" rx="70" ry="42" fill="#3f8fd0"/><ellipse cx="560" cy="420" rx="56" ry="30" fill="#6cb6ea"/>
+        ${roads}${peaks}${trees}${cacti}
+      </g>
+      <ellipse cx="888" cy="128" rx="55" ry="38" fill="#ecd394"/><ellipse cx="888" cy="128" rx="43" ry="28" fill="#5cb865"/>
+      <path d="M520 380 l12 -6 M490 470 l14 2" stroke="#8a5a2b" stroke-width="6"/>
+      ${blds}
+      <g id="mStd">${dots.std}</g><g id="mBur">${dots.bur}</g><g id="mRare">${dots.rare}</g><g id="mVault">${vaults}</g>
+      <g id="routeLayer"></g>
+      ${pois}
+      <g stroke="rgba(255,255,255,.18)" stroke-width="1.5">${grid}</g>
+      <g fill="rgba(255,255,255,.75)" font-family="Luckiest Guy, Impact, sans-serif" font-size="20" paint-order="stroke" stroke="#0a1f3d" stroke-width="4">${gl}</g>
+      <g transform="translate(70 930)"><circle r="34" fill="#1a0f00" stroke="#f7c948" stroke-width="3"/><path d="M0 -26 L8 0 L0 26 L-8 0Z" fill="#f7c948"/><path d="M0 0 L8 0 L0 26Z" fill="#c9871b"/><text y="-40" text-anchor="middle" fill="#f7c948" font-size="20" font-family="Luckiest Guy, Impact, sans-serif">N</text></g>
+    </g>
+  </svg>`;
+  $('mapBox').insertAdjacentHTML('afterbegin', svg);
+  [['lStd', 'mStd'], ['lBur', 'mBur'], ['lRare', 'mRare'], ['lVault', 'mVault']].forEach(([c, g]) => $(c).addEventListener('change', e => { $(g).style.display = e.target.checked ? '' : 'none'; }));
+  setupZoom();
+}
+
+// Zoom and pan by changing the SVG viewBox.
+function setupZoom() {
+  const svg = $('mapSvg');
+  const vb = {x:0, y:0, w:1000};
+  const MIN = 160, MAX = 1000;
+  const apply = () => {
+    vb.w = Math.min(MAX, Math.max(MIN, vb.w));
+    vb.x = Math.min(1000 - vb.w * .25, Math.max(-vb.w * .75, vb.x));
+    vb.y = Math.min(1000 - vb.w * .25, Math.max(-vb.w * .75, vb.y));
+    if (vb.w === MAX) { vb.x = 0; vb.y = 0; }
+    svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.w}`);
+    $('zoomLvl').textContent = (1000 / vb.w).toFixed(1) + '×';
+  };
+  const toSvg = (cx, cy) => { const r = svg.getBoundingClientRect(); return {x:vb.x + (cx - r.left) / r.width * vb.w, y:vb.y + (cy - r.top) / r.height * vb.w}; };
+  const zoomAt = (f, px, py) => { const nw = Math.min(MAX, Math.max(MIN, vb.w * f)); vb.x = px - (px - vb.x) * nw / vb.w; vb.y = py - (py - vb.y) * nw / vb.w; vb.w = nw; apply(); };
+  svg.addEventListener('wheel', e => { e.preventDefault(); const p = toSvg(e.clientX, e.clientY); zoomAt(e.deltaY > 0 ? 1.18 : 1 / 1.18, p.x, p.y); }, {passive:false});
+  const ptrs = new Map(); let moved = 0, pinch0 = null;
+  svg.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY}); moved = 0; svg.classList.add('drag'); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = {d:Math.hypot(a.x - b.x, a.y - b.y), w:vb.w}; } });
+  svg.addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId)) return;
+    const prev = ptrs.get(e.pointerId), r = svg.getBoundingClientRect();
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (ptrs.size === 1) {
+      const dx = e.clientX - prev.x, dy = e.clientY - prev.y; moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 4 && !svg.hasPointerCapture(e.pointerId)) svg.setPointerCapture(e.pointerId);
+      vb.x -= dx / r.width * vb.w; vb.y -= dy / r.height * vb.w; apply();
+    } else if (ptrs.size === 2 && pinch0) {
+      moved = 99; const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      const c = toSvg((a.x + b.x) / 2, (a.y + b.y) / 2); zoomAt((pinch0.w * pinch0.d / d) / vb.w, c.x, c.y);
+    }
+  });
+  const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null; if (!ptrs.size) svg.classList.remove('drag'); };
+  svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
+  svg.addEventListener('click', e => { if (moved > 6) { e.stopPropagation(); return; } const g = e.target.closest('.poi'); if (g) selectPoi(g.dataset.poi); }, true);
+  svg.querySelectorAll('.poi').forEach(g => g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPoi(g.dataset.poi); } }));
+  $('zIn').addEventListener('click', () => zoomAt(1 / 1.5, vb.x + vb.w / 2, vb.y + vb.w / 2));
+  $('zOut').addEventListener('click', () => zoomAt(1.5, vb.x + vb.w / 2, vb.y + vb.w / 2));
+  $('zReset').addEventListener('click', () => { vb.w = MAX; apply(); });
+  window.mapFocus = (pts) => { const xs = pts.map(p => p.x), ys = pts.map(p => p.y); const w = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) + 260; vb.w = Math.min(MAX, w); vb.x = (Math.min(...xs) + Math.max(...xs)) / 2 - vb.w / 2; vb.y = (Math.min(...ys) + Math.max(...ys)) / 2 - vb.w / 2; apply(); };
+  apply();
+}
+const cnt = v => v == null ? '—' : v;
+function selectPoi(id) {
+  const p = byId[id];
+  document.querySelectorAll('.poi').forEach(g => g.classList.toggle('sel', g.dataset.poi === id));
+  const total = (p.std || 0) + (p.bur || 0) + (p.rare || 0);
+  $('poiInfo').innerHTML = `<h3 style="color:var(--gold)">${p.name}</h3>
+    <dl><dt>Standard chest spawns</dt><dd>${cnt(p.std)}</dd><dt>Buried chest spawns</dt><dd>${cnt(p.bur)}</dd><dt>Rare chest spawns</dt><dd>${cnt(p.rare)}</dd><dt>Known total</dt><dd>${total || '—'}</dd></dl>
+    <p class="note" style="margin-top:8px">${p.std == null ? 'No reliable standard-chest count is published yet, so its faded dots are placeholders.' : 'Counts from community guides. Sources differ by a few chests.'}</p>`;
+}
+function renderRoutes() {
+  $('routes').innerHTML = ROUTES.map((r, i) => `
+    <button type="button" class="route" data-id="${r.id}" aria-pressed="false">
+      <span class="rt"><span class="rn">${r.name}</span><span class="pill num">~${r.cpg + (r.vaults ? r.vaults * RARE_PER_VAULT : 0)} chests/game</span></span>
+      <span class="stops">${r.stops.map((s, j) => (j + 1) + '. ' + byId[s].name).join('  →  ')}</span>
+      <span class="hint">${r.why}</span>
+      <span class="meta"><span class="pill num">${r.spawns} spawn points on route</span><span class="pill" data-rmeta></span></span>
+    </button>`).join('');
+  document.querySelectorAll('.route').forEach(b => b.addEventListener('click', () => {
+    const r = ROUTES.find(x => x.id === b.dataset.id);
+    activeRoute = r.id; S.cpg = r.cpg;
+    if (r.vaults) { S.vaultOn = true; S.vaults = r.vaults; $('vaultOn').checked = true; }
+    const pts = r.stops.map(s => byId[s]);
+    let g = `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + p.y).join(' ')}" fill="none" stroke="#3a2100" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+    g += `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + p.y).join(' ')}" fill="none" stroke="#ffe9a3" stroke-width="6" stroke-dasharray="18 10" stroke-linecap="round" stroke-linejoin="round" marker-mid="url(#arrow)" marker-end="url(#arrow)"/>`;
+    g += pts.map((p, i) => `<g><circle cx="${p.x + 22}" cy="${p.y + 22}" r="15" fill="#f7c948" stroke="#3a2100" stroke-width="3"/><text x="${p.x + 22}" y="${p.y + 29}" text-anchor="middle" font-family="Luckiest Guy, Impact, sans-serif" font-size="20" fill="#3a2100">${i + 1}</text></g>`).join('');
+    $('routeLayer').innerHTML = g;
+    if (window.mapFocus) window.mapFocus(pts);
+    selectPoi(r.stops[0]);
+    update();
+  }));
+}
+function renderRouteMeta() {
+  document.querySelectorAll('.route').forEach(b => {
+    const r = ROUTES.find(x => x.id === b.dataset.id), c = (r.cpg + (r.vaults ? r.vaults * RARE_PER_VAULT : 0)) * S.gph;
+    b.querySelector('[data-rmeta]').textContent = hoursFmt(137500 * Math.LN2 / c) + ' for a 50% token shot';
+    b.setAttribute('aria-pressed', String(r.id === activeRoute));
+  });
+}
+
+// ---------- pirate token coins ----------
+function coins() {
+  const cv = $('coins'), ctx = cv.getContext('2d'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H, dpr = Math.min(2, devicePixelRatio || 1);
+  const resize = () => { const b = cv.getBoundingClientRect(); W = cv.width = b.width * dpr; H = cv.height = b.height * dpr; };
+  resize(); addEventListener('resize', resize);
+  const rr = rng(7), list = [];
+  for (let i = 0; i < 26; i++) list.push({x:rr(), y:rr(), s:10 + rr() * 14, v:.0006 + rr() * .0012, ph:rr() * 6.28, sp:.0012 + rr() * .002, rot:(rr() - .5) * .6});
+  function token(s, flip) {
+    const sx = Math.max(.08, Math.abs(flip)), front = flip >= 0;
+    ctx.save(); ctx.scale(sx, 1);
+    ctx.beginPath(); ctx.arc(0, 0, s, 0, 6.283);
+    const g = ctx.createRadialGradient(-s * .3, -s * .3, s * .1, 0, 0, s);
+    g.addColorStop(0, '#fff2c0'); g.addColorStop(.55, '#f7c948'); g.addColorStop(1, '#a8670f');
+    ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = s * .12; ctx.strokeStyle = '#6b3d05'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, s * .78, 0, 6.283); ctx.lineWidth = s * .06; ctx.strokeStyle = '#c9871b'; ctx.stroke();
+    // notches on the rim
+    ctx.strokeStyle = '#8a5210'; ctx.lineWidth = s * .05;
+    for (let k = 0; k < 12; k++) { const a = k / 12 * 6.283; ctx.beginPath(); ctx.moveTo(Math.cos(a) * s * .82, Math.sin(a) * s * .82); ctx.lineTo(Math.cos(a) * s * .95, Math.sin(a) * s * .95); ctx.stroke(); }
+    ctx.fillStyle = '#4a2a04'; ctx.strokeStyle = '#4a2a04';
+    if (front) {
+      // skull and crossbones
+      ctx.lineWidth = s * .12; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-s * .45, s * .05); ctx.lineTo(s * .45, s * .55); ctx.moveTo(s * .45, s * .05); ctx.lineTo(-s * .45, s * .55); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -s * .15, s * .32, 0, 6.283); ctx.fill();
+      ctx.fillRect(-s * .17, -s * .02, s * .34, s * .26);
+      ctx.fillStyle = '#ffe9a3';
+      ctx.beginPath(); ctx.arc(-s * .12, -s * .17, s * .08, 0, 6.283); ctx.arc(s * .12, -s * .17, s * .08, 0, 6.283); ctx.fill();
+    } else {
+      // back side: compass star
+      ctx.beginPath();
+      for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283 - Math.PI / 2, rad = k % 2 ? s * .2 : s * .55; ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); }
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  const draw = t => {
+    ctx.clearRect(0, 0, W, H);
+    for (const c of list) {
+      const y = ((c.y + (reduce ? 0 : t * c.v * .05)) % 1.15) - .07;
+      ctx.save(); ctx.translate(c.x * W, y * H); ctx.rotate(c.rot); ctx.globalAlpha = .85;
+      token(c.s * dpr, Math.cos(c.ph + (reduce ? 0 : t * c.sp)));
+      ctx.restore();
+    }
+    if (!reduce) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+
+buildMap();
+renderRoutes();
+update();
+tick(); setInterval(tick, 30000);
+coins();
+})();
+</script>
+
+</html>
