@@ -1,10 +1,12 @@
 # Fortnite Treasure Drop Rates
 
+**Live site: https://fortnite-tressure-drop-rates.vercel.app/**
+
 Made by Money Man Musa (FN User: progamer987612).
 
 A fan-made, single-page calculator for the Fortnite Chapter 7 **Treasure Hunters** (One Piece) chest treasures.
 
-Open `index.html` in a browser. No build step.
+Use it live at https://fortnite-tressure-drop-rates.vercel.app/ or open `index.html` in a browser. No build step. Pushes to `main` redeploy on Vercel automatically.
 
 ## What it does
 - Uses Epic's published per-chest odds (Fortnite Status, Nov 7, 2026) for every treasure: Pirate Shop Access, weekly Gold Outfit, Vehicle & Decal, Pickaxe/Back Bling, Jam Track, Loading Screen and Gizmos.
