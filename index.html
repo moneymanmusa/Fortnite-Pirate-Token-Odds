@@ -57,6 +57,16 @@ button,input,select{font:inherit;color:inherit}
 .brand small{display:block;font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
 .brand small em{font-style:normal;color:var(--gold-hi)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
+.jump{position:relative}
+.jump summary{list-style:none;cursor:pointer;background:var(--gold);color:#2a1700;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:8px 14px;min-height:40px;display:flex;align-items:center;gap:6px;transform:skewX(-8deg);box-shadow:0 3px 0 #6b3d05}
+.jump summary::-webkit-details-marker{display:none}
+.jump summary:hover{background:var(--gold-hi)}
+.jump[open] summary span{display:inline-block;transform:rotate(180deg)}
+.jump nav{position:absolute;left:0;top:calc(100% + 8px);z-index:40;min-width:240px;max-width:calc(100vw - 32px);background:var(--panel-2);border:2px solid var(--gold-deep);box-shadow:0 12px 30px rgba(0,0,0,.55);display:grid;padding:6px}
+.jump nav a{color:var(--ink);text-decoration:none;font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line)}
+.jump nav a:last-child{border-bottom:0}
+.jump nav a:hover,.jump nav a:focus-visible{background:var(--gold);color:#2a1700}
+[id="top"],[id="odds"],[id="chest-log"],[id="prizes"],[id="shop-value"],[id="item-values"],[id="chest-routes"],[id="tips"],[id="sources"]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 96px)}
 .chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:6px 12px;transform:skewX(-8deg)}
 .chip > *{transform:skewX(8deg)}
 .chip .k{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
@@ -264,6 +274,20 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
       </svg>
       <div><b>Treasure Odds</b><small>Made by <em>Money Man Musa</em> (FN User: progamer987612)</small></div>
     </div>
+    <details class="jump" id="jumpMenu">
+      <summary>Menu <span aria-hidden="true">▾</span></summary>
+      <nav aria-label="Jump to a section">
+        <a href="#top">Your odds summary</a>
+        <a href="#odds">Drop odds &amp; sliders</a>
+        <a href="#chest-log">Chest log</a>
+        <a href="#prizes">Prize value &amp; charts</a>
+        <a href="#shop-value">Pirate Shop Access value</a>
+        <a href="#item-values">How each treasure is valued</a>
+        <a href="#chest-routes">Chest routes &amp; map</a>
+        <a href="#tips">Farming tips</a>
+        <a href="#sources">Sources</a>
+      </nav>
+    </details>
     <div class="chips">
       <div class="chip" id="chipTH"><span class="dot"></span><span class="k">Next Treasure Hour</span><span class="v num" id="thCountdown">…</span></div>
       <div class="chip"><span class="k">Season ends</span><span class="v num" id="seasonCountdown">…</span></div>
@@ -271,7 +295,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
   </div>
 </header>
 
-<div class="hero">
+<div class="hero" id="top">
   <canvas id="coins" aria-hidden="true"></canvas>
   <div class="wrap">
     <div>
@@ -290,7 +314,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
 </div>
 
 <main>
-<section>
+<section id="odds">
   <div class="wrap">
     <div class="sec-head">
       <div><p class="eyebrow">Your locker</p><h2>Drop odds, tuned to you</h2></div>
@@ -369,7 +393,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
 
       <div>
         <div class="loot" id="loot"></div>
-        <div class="panel" style="margin-top:20px">
+        <div class="panel" style="margin-top:20px" id="chest-log">
           <p class="eyebrow">Chest log</p>
           <h3 style="color:var(--gold);margin:2px 0 10px">Chests you've opened so far</h3>
           <div class="counter">
@@ -386,7 +410,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
   </div>
 </section>
 
-<section style="background:linear-gradient(180deg,transparent,rgba(26,20,64,.6))">
+<section id="prizes" style="background:linear-gradient(180deg,transparent,rgba(26,20,64,.6))">
   <div class="wrap">
     <div class="sec-head">
       <div><p class="eyebrow">Prize vault</p><h2>What your chests are worth</h2></div>
@@ -411,7 +435,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
       </div>
     </div>
 
-    <div class="shopcalc">
+    <div class="shopcalc" id="shop-value">
       <div class="panel">
         <h3 style="color:var(--gold)">Pirate Shop Access: two weeks of free Item Shop</h3>
         <p class="hint" style="margin:6px 0 14px">The token lets you claim any V-Bucks item in the shop for 14 days. Many items stay in the shop for several days, so the value is the shop on day one plus only the <b>new</b> items added on each of the next 13 daily resets.</p>
@@ -443,7 +467,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
       </div>
     </div>
 
-    <div class="panel" style="margin-top:20px">
+    <div class="panel" style="margin-top:20px" id="item-values">
       <h3 style="color:var(--gold);margin-bottom:10px">How each treasure is valued</h3>
       <div class="tablebox">
         <table class="valtable">
@@ -455,7 +479,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
   </div>
 </section>
 
-<section>
+<section id="chest-routes">
   <div class="wrap">
     <div class="sec-head">
       <div><p class="eyebrow">Crossbones Isle</p><h2>Chest routes</h2></div>
@@ -485,7 +509,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
       <div>
         <div class="routes" id="routes"></div>
         <div class="panel poi-info" id="poiInfo"><p class="note">Tap a location on the map to see its chest counts.</p></div>
-        <div class="panel" style="margin-top:14px">
+        <div class="panel" style="margin-top:14px" id="tips">
           <h3 style="color:var(--gold);margin-bottom:8px">Farming tips</h3>
           <ul class="tips">
             <li><b>Play public matches.</b> Guides report the token does not drop in bot lobbies.</li>
@@ -507,7 +531,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
   <div><span class="k">Chests / hr</span><span class="v num" id="mCph">…</span></div>
 </div>
 
-<footer>
+<footer id="sources">
   <div class="wrap">
     <span class="made">Made by Money Man Musa (FN User: progamer987612)</span>
     <p><b style="color:var(--ink)">Fan-made tool. Not affiliated with or endorsed by Epic Games or the One Piece rights holders.</b> Drop odds are Epic's official per-chest rates, posted by Fortnite Status on Nov 7, 2026, and Epic says they haven't changed since launch except during Treasure Hours. Weekly treasures are assumed to reset every 7 days from the Nov 1 season start. Vault chests are assumed to roll treasures like any other chest. Chest counts come from community guides and vary between sources.</p>
@@ -1091,6 +1115,17 @@ function coins() {
   };
   requestAnimationFrame(draw);
 }
+
+// Jump menu: smooth-scroll to a section and close the dropdown.
+document.querySelectorAll('#jumpMenu nav a').forEach(a => a.addEventListener('click', e => {
+  const t = document.getElementById(a.getAttribute('href').slice(1));
+  if (!t) return;
+  e.preventDefault();
+  $('jumpMenu').open = false;
+  t.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+}));
+document.addEventListener('click', e => { const m = $('jumpMenu'); if (m.open && !m.contains(e.target)) m.open = false; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('jumpMenu').open = false; });
 
 buildMap();
 renderRoutes();
