@@ -217,7 +217,26 @@ footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--mute
 footer ul{margin:8px 0 0;padding-left:18px;display:grid;gap:4px}
 footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-bottom:10px;display:block}
 
+.shop-tile{background:linear-gradient(135deg,#0f3b2a,#1f1747 70%)!important;border-color:#3c8a4a!important}
+.shop-tile .k{display:flex;align-items:center;gap:8px}
+.shop-tile .v{color:#c9f7cf!important}
+.shop-tile a{color:#a9efb2;font-weight:700}
+.live-dot{width:9px;height:9px;border-radius:50%;background:#62d26f;box-shadow:0 0 0 0 rgba(98,210,111,.6);animation:gpulse 1.8s infinite;flex:none}
+.live-dot.off{background:var(--muted);animation:none}
+@keyframes gpulse{0%{box-shadow:0 0 0 0 rgba(98,210,111,.6)}100%{box-shadow:0 0 0 9px rgba(98,210,111,0)}}
+.stats-panel{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}
+.stats-form{display:grid;gap:10px}
+.stats-form input{background:#241c55;border:2px solid var(--gold-deep);padding:12px 14px;width:100%;min-height:48px;font-size:18px;font-weight:700}
+.stats-form input::placeholder{color:var(--muted);font-weight:500}
+.stats-btns{display:flex;gap:12px;flex-wrap:wrap}
+.stats-btns .btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;flex:1 1 180px}
+.stats-btns .btn > span{transform:skewX(8deg)}
+.site-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.site-list li{background:#120d2c;border:1px solid var(--line);padding:12px 14px;font-size:14px;color:var(--muted)}
+.site-list b{color:var(--ink);display:block;font-size:16px}
+[id="shop-today"],[id="player-stats"]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 96px)}
 @media (max-width:980px){
+  .stats-panel{grid-template-columns:minmax(0,1fr)}
   .hero .wrap,.locker,.charts,.map-grid,.shopcalc{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:700px){
@@ -277,6 +296,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
     <details class="jump" id="jumpMenu">
       <summary>Menu <span aria-hidden="true">▾</span></summary>
       <nav aria-label="Jump to a section">
+        <a href="#shop-today">Item shop value today</a>
         <a href="#top">Your odds summary</a>
         <a href="#odds">Drop odds &amp; sliders</a>
         <a href="#chest-log">Chest log</a>
@@ -285,6 +305,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
         <a href="#item-values">How each treasure is valued</a>
         <a href="#chest-routes">Chest routes &amp; map</a>
         <a href="#tips">Farming tips</a>
+        <a href="#player-stats">Player stats lookup</a>
         <a href="#sources">Sources</a>
       </nav>
     </details>
@@ -305,6 +326,7 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
       <p class="byline">Made by Money Man Musa (FN User: progamer987612)</p>
     </div>
     <div class="score">
+      <div class="tile big shop-tile" id="shop-today"><div class="k"><span class="live-dot" id="shopDot"></span>Value of item shop today</div><div class="v num" id="shopToday">Loading…</div><div class="s" id="shopTodayS">Adding up today's Item Shop…</div><div class="s"><a href="https://fortnite.gg/shop" target="_blank" rel="noopener">See today's shop on Fortnite.GG ↗</a></div></div>
       <div class="tile big"><div class="k">Pirate Shop Access by season end</div><div class="v num" id="hTok">…</div><div class="s" id="hTokS"></div></div>
       <div class="tile"><div class="k">Expected prize value</div><div class="v num" id="hEV">…</div><div class="s">in US dollars, from your odds</div></div>
       <div class="tile"><div class="k">Chests left to open</div><div class="v num" id="hChests">…</div><div class="s" id="hChestsS"></div></div>
@@ -523,6 +545,30 @@ footer .made{font-family:var(--display);font-size:22px;color:var(--gold);margin-
     </div>
   </div>
 </section>
+
+<section id="player-stats">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Player lookup</p><h2>Check your stats</h2></div>
+      <p>Type an Epic username to see that player's wins, K/D, matches and more on Fortnite Tracker or Fortnite.GG. Stats open in a new tab.</p>
+    </div>
+    <div class="panel stats-panel">
+      <form class="stats-form" id="statsForm" autocomplete="off">
+        <label for="fnName" class="eyebrow">Epic username</label>
+        <input id="fnName" type="text" placeholder="e.g. progamer987612" autocapitalize="off" spellcheck="false" maxlength="40" enterkeyhint="search">
+        <div class="stats-btns">
+          <a class="btn" id="trkLink" href="https://fortnitetracker.com/" target="_blank" rel="noopener"><span>Fortnite Tracker ↗</span></a>
+          <a class="btn ghost" id="ggLink" href="https://fortnite.gg/stats" target="_blank" rel="noopener"><span>Fortnite.GG ↗</span></a>
+        </div>
+        <p class="note">Console players: use the display name on your Epic account. If no stats show up, turn on public game stats in Fortnite's Account and Privacy settings.</p>
+      </form>
+      <ul class="site-list">
+        <li><b>Fortnite Tracker</b>Lifetime and season stats, recent matches, and rank by mode.</li>
+        <li><b>Fortnite.GG</b>Stats plus the full Item Shop, with how long each item has been in the shop.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 </main>
 
 <div class="mbar" aria-live="polite">
@@ -595,6 +641,8 @@ const $ = id => document.getElementById(id);
 const fmtInt = n => Math.round(n).toLocaleString('en-US');
 const usd = n => n >= 1000 ? '$' + fmtInt(n) : '$' + n.toFixed(2);
 const vbUsd = () => { const [d, v] = S.pack.split('|').map(Number); return d / v; };
+const LIVE_URL = 'https://fortnite-tressure-drop-rates.vercel.app/';
+let SHOP = null;
 const shopVB = () => S.shopDaily + 13 * S.shopNew;
 const tokenVB = () => shopVB() * S.shopAvg;
 const cpgTotal = () => S.cpg + (S.vaultOn ? S.vaults * RARE_PER_VAULT : 0);
@@ -817,7 +865,7 @@ function update() {
   $('thHours').disabled = S.th === 'off';
   $('thHint').textContent = S.th === 'daily' ? 'Played at boosted odds every day in this what-if.' : 'Per Saturday. Up to 4 boosted hours across both windows.';
   const R = compute(S.th), Rd = compute('daily'), Ro = compute('off');
-  renderHero(R); renderCards(R); renderLine(R, Rd, Ro); renderPrizes(R); renderHistory(); renderRouteMeta();
+  renderHero(R); renderShopToday(); renderCards(R); renderLine(R, Rd, Ro); renderPrizes(R); renderHistory(); renderRouteMeta();
   save();
 }
 
@@ -1127,10 +1175,60 @@ document.querySelectorAll('#jumpMenu nav a').forEach(a => a.addEventListener('cl
 document.addEventListener('click', e => { const m = $('jumpMenu'); if (m.open && !m.contains(e.target)) m.open = false; });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') $('jumpMenu').open = false; });
 
+// ---------- today's Item Shop value ----------
+// Adds up today's shop from fortnite-api.com. Each item is counted once: duplicate listings are skipped,
+// and a bundle is only counted when it contains something not sold on its own.
+function summarizeShop(j) {
+  const entries = (j && j.data && j.data.entries) || [];
+  const ids = e => [].concat(e.brItems || [], e.tracks || [], e.instruments || [], e.cars || [], e.legoKits || []).map(i => i && i.id).filter(Boolean);
+  const seen = new Set();
+  let vbucks = 0, items = 0;
+  const take = e => { const list = ids(e), fresh = list.filter(id => !seen.has(id)); if (list.length && !fresh.length) return; fresh.forEach(id => seen.add(id)); items += fresh.length || 1; vbucks += Math.max(0, e.finalPrice || 0); };
+  entries.filter(e => !e.bundle).forEach(take);
+  entries.filter(e => e.bundle).forEach(take);
+  return {vbucks, items, offers: entries.length, date: j && j.data && j.data.date};
+}
+function renderShopToday() {
+  const v = $('shopToday'), s = $('shopTodayS');
+  if (!v) return;
+  if (!SHOP) return;
+  if (SHOP.error) {
+    $('shopDot').classList.add('off');
+    v.textContent = 'Live on the website';
+    s.innerHTML = `Today's total loads at <a href="${LIVE_URL}" target="_blank" rel="noopener">${LIVE_URL.replace('https://', '').replace(/\/$/, '')}</a>.`;
+    return;
+  }
+  $('shopDot').classList.remove('off');
+  v.textContent = fmtInt(SHOP.vbucks) + ' V-Bucks · ' + usd(SHOP.vbucks * vbUsd());
+  const when = SHOP.date ? new Date(SHOP.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : 'today';
+  s.textContent = `${fmtInt(SHOP.items)} different items to buy, ${when}. Each item counted once, bundles only when they add something new. Dollars use the pack picked in the prize vault.`;
+}
+async function loadShop() {
+  const tries = [
+    async () => { const r = await fetch('/api/shop', {cache: 'no-store'}); if (!r.ok) throw 0; const d = await r.json(); if (!d || !d.vbucks) throw 0; return d; },
+    async () => { const r = await fetch('https://fortnite-api.com/v2/shop'); if (!r.ok) throw 0; const d = summarizeShop(await r.json()); if (!d.vbucks) throw 0; return d; }
+  ];
+  for (const t of tries) { try { SHOP = await t(); renderShopToday(); return; } catch (e) {} }
+  SHOP = {error: true}; renderShopToday();
+}
+
+// ---------- player stats links ----------
+function statLinks() {
+  const n = $('fnName').value.trim(), q = encodeURIComponent(n);
+  $('trkLink').href = n ? 'https://fortnitetracker.com/profile/all/' + q : 'https://fortnitetracker.com/';
+  $('ggLink').href = n ? 'https://fortnite.gg/stats?player=' + q : 'https://fortnite.gg/stats';
+  try { localStorage.setItem('fnName', n); } catch (e) {}
+}
+try { $('fnName').value = localStorage.getItem('fnName') || ''; } catch (e) {}
+$('fnName').addEventListener('input', statLinks);
+$('statsForm').addEventListener('submit', e => { e.preventDefault(); statLinks(); $('trkLink').click(); });
+statLinks();
+
 buildMap();
 renderRoutes();
 update();
 tick(); setInterval(tick, 30000);
+loadShop();
 coins();
 })();
 </script>
